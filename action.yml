@@ -25,10 +25,11 @@ runs:
     - name: Setup Yarn
       run: |
         if command -v yarn; then
+          yarn -v
+        else
           corepack enable
           corepack prepare yarn@stable --activate
         fi
-        yarn -v
       shell: bash
     - name: Cache dependencies
       id: cache-deps
