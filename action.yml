@@ -8,7 +8,7 @@ branding:
 inputs:
   node-version:
     description: 'The version of Node.js that will be used'
-    default: 18
+    default: '18'
 
 outputs:
   cache-hit:
@@ -18,11 +18,18 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/checkout@v3
     - name: Setup node
       uses: actions/setup-node@v3
       with:
         node-version: ${{ inputs.node-version }}
+    - name: Setup Yarn
+      run: |
+        if command -v yarn; then
+          corepack enable
+          corepack prepare yarn@stable --activate
+        fi
+        yarn -v
+      shell: bash
     - name: Cache dependencies
       id: cache-deps
       uses: actions/cache@v3
@@ -36,3 +43,4 @@ runs:
     - if: steps.cache-deps.outputs.cache-hit != 'true'
       name: Install dependencies
       run: yarn install --immutable
+      shell: bash
