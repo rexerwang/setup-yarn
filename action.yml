@@ -1,0 +1,38 @@
+name: 'Setup Yarn'
+description: Setup node & yarn, and Install dependencies & cache on the self-hosted runner.
+author: rexerwang
+branding:
+  icon: 'package'
+  color: 'yellow'
+
+inputs:
+  node-version:
+    description: 'The version of Node.js that will be used'
+    default: 18
+
+outputs:
+  cache-hit:
+    description: 'Indicates a cache hit'
+    value: ${{ steps.cache-deps.outputs.cache-hit }}
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v3
+    - name: Setup node
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.node-version }}
+    - name: Cache dependencies
+      id: cache-deps
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-node-modules
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ env.cache-name }}-
+    - if: steps.cache-deps.outputs.cache-hit != 'true'
+      name: Install dependencies
+      run: yarn install --immutable
